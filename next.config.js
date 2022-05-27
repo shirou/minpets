@@ -2,9 +2,9 @@
 const nextConfig = {
   reactStrictMode: true,
   images: {
-    loader: 'custom',
+    loader: "custom",
   },
-  trailingSlash: true
+  trailingSlash: true,
 };
 
-module.exports = nextConfig
+module.exports = nextConfig;
