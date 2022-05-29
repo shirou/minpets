@@ -1,8 +1,7 @@
 import { useCallback, useRef, useState } from "react";
 
-
 import { search } from "@utils/search";
-import { Input } from "@nextui-org/react";
+import { TextInput } from "@patternfly/react-core";
 
 export const Search = () => {
   const [query, setQuery] = useState("");
@@ -37,6 +36,5 @@ export const Search = () => {
     }
   }, []);
 
-
-  return <Input placeholder="search" clearable bordered></Input>;
+  return <TextInput id="search-input" placeholder="search"></TextInput>;
 };

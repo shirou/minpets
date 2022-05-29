@@ -1,46 +1,111 @@
 import { useRouter } from "next/router";
-import { useEffect } from "react";
+import { useEffect, useState } from "react";
 import Head from "next/head";
 
-import hljs from 'highlight.js';
-import 'highlight.js/styles/github.css';
+import hljs from "highlight.js";
+import "highlight.js/styles/github.css";
+
+import {
+  CardHeader,
+  ClipboardCopyButton,
+  Flex,
+  Badge,
+  Text,
+} from "@patternfly/react-core";
+import { Card, CardTitle, CardBody, CardActions } from "@patternfly/react-core";
 
 import { DefaultLayout } from "@layouts/default";
 import { getSnippetsBySlug, getAllSnippets } from "@utils/files";
-import { Search } from "@components/Search";
 
 type Props = {
-  post: {
-    date: string;
+  snippet: {
     title: string;
+    tags: string[];
+    language: string;
     content: string;
   };
 };
 
-function Snippet({ post }: Props) {
+const createTags = (tags: string[]) => {
+  return (
+    <Flex spaceItems={{ default: "spaceItemsXs" }}>
+      {tags.map((tag) => {
+        return <Badge key={tag}>{tag}</Badge>;
+      })}
+    </Flex>
+  );
+};
+
+function Snippet({ snippet }: Props) {
   const router = useRouter();
-  const fileTree = ["hoge"];
+  const [copied, setCopied] = useState(false);
 
   useEffect(() => {
-    hljs.initHighlighting();
-});
+    hljs.highlightAll();
+  }, [snippet]);
 
-  const snippet = post.content;
+  const clipboardCopyFunc = (event: React.MouseEvent, text: string) => {
+    if (!event.currentTarget.parentElement) {
+      return;
+    }
 
+    const clipboard = event.currentTarget.parentElement;
+    const el = document.createElement("textarea");
+    el.value = text.toString();
+    clipboard.appendChild(el);
+    el.select();
+    document.execCommand("copy");
+    clipboard.removeChild(el);
+  };
+
+  const onClick = (event: React.MouseEvent, text: string) => {
+    clipboardCopyFunc(event, text);
+    setCopied(true);
+  };
+
+  const tags = createTags(snippet.tags);
+
+  console.log(snippet.language);
   return (
-    <DefaultLayout fileTree={fileTree}>
+    <DefaultLayout>
       {router.isFallback ? (
         <h1>Loading…</h1>
       ) : (
         <article>
           <Head>
-            <title>{post.title}</title>
+            <title>{snippet.title}</title>
           </Head>
-          <pre style={{ width: '80vw' }}>
-          <code>
-              {snippet}
-          </code>
-          </pre>
+
+          <Card>
+            <CardHeader>
+              <CardTitle>
+                <Text>{snippet.title}</Text>
+
+                {tags}
+              </CardTitle>
+              <CardActions>
+                <ClipboardCopyButton
+                  id="copy-button"
+                  textId="code-content"
+                  aria-label="Copy to clipboard"
+                  onClick={(e) => onClick(e, snippet.content)}
+                  exitDelay={600}
+                  maxWidth="110px"
+                  variant="plain"
+                >
+                  {copied
+                    ? "Successfully copied to clipboard!"
+                    : "Copy to clipboard"}
+                </ClipboardCopyButton>
+              </CardActions>
+            </CardHeader>
+
+            <CardBody>
+              <pre>
+                <code>{snippet.content}</code>
+              </pre>
+            </CardBody>
+          </Card>
         </article>
       )}
     </DefaultLayout>
@@ -56,24 +121,21 @@ type Params = {
 };
 
 export const getStaticProps = async ({ params }: Params) => {
-  // 第二引数に渡した配列の要素をkeyとしたオブジェクトが返される(上記で解説)
-  // date, titleにはfront-matterの内容が、contentにはmarkdownのコードの中身がvalueとなる
-  const snippet = getSnippetsBySlug(params.slug, ["date", "title", "content"]);
-  const content = (snippet.content as string) || "";
+  const snippet = getSnippetsBySlug(params.slug);
+  const content = snippet.content || "";
 
   return {
     props: {
-      post: {
-        ...snippet, // front-matterのmeta情報(date, title)
-        content, // markdownのcontents
+      snippet: {
+        ...snippet,
+        content,
       },
     },
   };
 };
 
 export const getStaticPaths = async () => {
-  const paths = getAllSnippets();
-  console.log(paths)
+  const { paths } = getAllSnippets();
   return {
     paths: paths.map((path) => ({
       params: {

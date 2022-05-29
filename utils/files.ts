@@ -1,63 +1,115 @@
-import fs from "fs";
+import fs, { writeFileSync } from "fs";
 import glob from "glob";
 import { join } from "path";
 import matter from "gray-matter";
-import { time } from "console";
+import { TreeViewDataItem } from "@patternfly/react-core";
 
-const config = require('../minpetsconfig.json');
+import { TreeFileName } from "./constants";
+import { getLanguage } from "@utils/language";
+
+const config = require("../minpetsconfig.json");
 
 const postDirPrefix = config["snippets_path"];
 const postsDirectory = join(process.cwd(), postDirPrefix);
 
-export const getSnippetsBySlug = (
-  slugArray: string[],
-  fields: string[] = []
-) => {
+export type Snippet = {
+  slug: string[];
+  title: string;
+  tags: string[];
+  language: string;
+  content: string; // all markdown content
+  code: string; // snippet itself
+};
+
+export const getSnippetsBySlug = (slugArray: string[]): Snippet => {
   const matchedSlug = slugArray.join("/");
   const realSlug = matchedSlug.replace(/\.md$/, "");
   const fullPath = join(postsDirectory, `${realSlug}.md`);
   const fileContents = fs.readFileSync(fullPath, "utf8");
   const { data, content } = matter(fileContents);
 
-  type Items = {
-    [key: string]: string | string[];
+  const tagsFromSlugs = slugArray.slice(0, -1);
+  const tags = data["tags"]
+    ? data["tags"].concat(tagsFromSlugs)
+    : tagsFromSlugs;
+
+  if (!data["language"]) {
+    data["language"] = getLanguage(tags) || "";
+  }
+  return {
+    slug: slugArray,
+    title: data["title"] || "",
+    content: content,
+    code: content,
+    language: data["language"],
+    tags: tags,
   };
-
-  const items: Items = {};
-
-  console.log({ fileContents })
-  console.log({ data })
-
-  fields.forEach((field) => {
-    if (field === "content") {
-      items[field] = content;
-    }
-
-    if (data[field]) {
-      items[field] = data[field];
-    }
-  });
-
-  return items;
 };
 
-export const writeFileTree = (paths: string[][]) => {
+const createParent = (
+  node: TreeViewDataItem,
+  paths: string[]
+): TreeViewDataItem => {
+  if (!node.children) {
+    node.children = [];
+  }
+  if (paths.length === 0) {
+    return node;
+  }
 
-  return paths.map((path) => {
+  const dirname = paths[0];
+  const found = node.children.find((item) => item.id == dirname);
+  if (found) {
+    return createParent(found, paths.slice(1));
+  }
+  const next = {
+    id: dirname,
+    name: dirname,
+  };
+  node.children.push(next);
+  return createParent(next, paths.slice(1));
+};
 
+// getFileTree get file tree which will be used on sidebar from glob list
+export const getFileTree = (paths: string[][]): TreeViewDataItem[] => {
+  const root = {
+    name: "root",
+    children: [],
+  } as TreeViewDataItem;
 
-
-  }).flat();
-}
-
+  paths.forEach((path) => {
+    const m = path.length;
+    const id = path.join("/");
+    const parent = createParent(root, path.slice(0, -1));
+    const leaf = {
+      id: id,
+      name: path[m - 1],
+    };
+    parent.children!.push(leaf);
+  });
+  return root.children!;
+};
 
 export const getAllSnippets = () => {
   const entries = glob.sync(`${postDirPrefix}/**/*.md`);
 
-
   const paths = entries
     .map((file) => file.split(postDirPrefix).pop())
-    .map((slug) => (slug as string).replace(/\.md$/, "").split("/").filter((s: string) => s !== ""));
+    .map((slug) =>
+      (slug as string)
+        .replace(/\.md$/, "")
+        .split("/")
+        .filter((s: string) => s !== "")
+    );
 
-  return paths;
+  const tree = getFileTree(paths);
+  // "tree.json" will be used by sidebar
+  writeFileSync(
+    join(process.cwd(), "public", TreeFileName),
+    JSON.stringify(tree)
+  );
+
+  return {
+    paths: paths,
+  };
 };

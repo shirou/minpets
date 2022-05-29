@@ -1,16 +1,15 @@
 import type { NextPage } from "next";
 import Head from "next/head";
+import { Text, Flex, FlexItem } from "@patternfly/react-core";
 
 import { DefaultLayout } from "@layouts/default";
-import { Container } from "@nextui-org/react";
-import styles from "../styles/Home.module.css";
 
 const Home: NextPage = () => {
   const fileTree = [""];
 
   return (
-    <DefaultLayout fileTree={fileTree}>
-      <Container>hogehoge</Container>
+    <DefaultLayout>
+      <Text>hogehoge</Text>
     </DefaultLayout>
   );
 };

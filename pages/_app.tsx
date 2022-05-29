@@ -1,14 +1,9 @@
-import "../styles/globals.css";
+import "@patternfly/react-core/dist/styles/base.css";
 
-import { NextUIProvider } from "@nextui-org/react";
 import { AppProps } from "next/app";
 
 function MyApp({ Component, pageProps }: AppProps) {
-  return (
-    <NextUIProvider>
-      <Component {...pageProps} />
-    </NextUIProvider>
-  );
+  return <Component {...pageProps} />;
 }
 
 export default MyApp;

@@ -1,63 +1,61 @@
-import { useTheme, css, Row, Spacer, Text, Container } from "@nextui-org/react";
-import { BsBrightnessHigh, BsGithub } from "react-icons/bs";
-import { BiMenu } from "react-icons/bi";
-import Tree from "@naisutech/react-tree";
+import { useCallback } from "react";
+import { useRouter } from "next/router";
 
-type Props = {
-  fileTree: string[];
+import { BiMenu } from "react-icons/bi";
+import { TreeView, TreeViewDataItem, Divider } from "@patternfly/react-core";
+import { Text } from "@patternfly/react-core";
+import { Stack, StackItem } from "@patternfly/react-core";
+
+import { useTree } from "@utils/fetcher";
+
+type Props = {};
+
+const myThemes = {
+  customLight: {
+    accentBg: "#2d3439",
+    accentText: "#999",
+    bg: "#2d3439",
+    hoverBg: "#505a63",
+    hoverText: "#fafafa",
+    icon: "gold",
+    indicator: "gold",
+    selectedBg: "#3f464e",
+    selectedText: "#fafafa",
+    separator: "gold",
+    text: "#fafafa",
+    textSize: "xsmall",
+  },
 };
 
 export const Sidebar = (props: Props) => {
-  const { theme } = useTheme();
+  const router = useRouter();
+  const { tree, isLoading, isError } = useTree();
 
-
-  const data = [
-    {
-      "id": "go",
-      "parentId": null,
-      "label": "Go",
+  const onSelect = useCallback(
+    (e: React.MouseEvent, item: TreeViewDataItem) => {
+      if (item.children) {
+        // not a leaf
+        return;
+      }
+      if (item.id) {
+        router.push(item.id);
+      }
     },
-    {
-      "id": "go-main",
-      "parentId": "go",
-      "label": "My child node"
-    },
-    {
-      "id": "python",
-      "parentId": null,
-      "label": "My child node"
-    }
+    [router]
+  );
 
-  ];
   return (
-    <nav
-      className="sidebar"
-      style={{ width: "150px", border: "1px", height: "100%", position: "absolute" }}
-    >
-      <Container
-        direction="column"
-        justify="space-between"
-        fluid
-        css={{
-          border: "1px",
-          position: "relative",
-          boxShadow: "0 1px 1px 0px rgba(9, 9, 9, 0.23)",
-          background: "transparent none repeat scroll 0% 0%",
-          alignItems: "center",
-        }}
-      >
-          <Text
-            css={{
-              color: theme!.colors.primary.value,
-              fontSize: "$md",
-              padding: "$2 $4",
-            }}
-          >
-            Minpets
-          </Text>
-          
-          <Tree nodes={data}  />
-      </Container>
-    </nav>
+    <Stack>
+      <Text>Minpets</Text>
+      <Divider />
+      {tree ? (
+        <TreeView
+          data={tree}
+          hasGuides={true}
+          variant="compactNoBackground"
+          onSelect={onSelect}
+        />
+      ) : null}
+    </Stack>
   );
 };
