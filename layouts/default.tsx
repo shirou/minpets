@@ -14,7 +14,7 @@ interface Props {
 export function DefaultLayout({ children }: Props) {
   return (
     <Sidebar hasGutter>
-      <SidebarPanel width={{ default: "width_25" }}>
+      <SidebarPanel width={{ default: "width_25", sm: "width_25" }}>
         <SideMenu />
       </SidebarPanel>
       <SidebarContent>

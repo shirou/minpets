@@ -14,3 +14,13 @@ export const useTree = () => {
     isError: error,
   };
 };
+
+export const useSource = (path: string) => {
+  const { data, error } = useSWR(join("/", path), fetcher);
+
+  return {
+    tree: data,
+    isLoading: !error && !data,
+    isError: error,
+  };
+};

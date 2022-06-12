@@ -50,9 +50,9 @@ export const Sidebar = (props: Props) => {
       <Divider />
       {tree ? (
         <TreeView
-          data={tree}
+          data={tree as TreeViewDataItem[]}
           hasGuides={true}
-          variant="compactNoBackground"
+          variant="default"
           onSelect={onSelect}
         />
       ) : null}

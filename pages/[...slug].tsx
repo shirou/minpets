@@ -15,15 +15,10 @@ import {
 import { Card, CardTitle, CardBody, CardActions } from "@patternfly/react-core";
 
 import { DefaultLayout } from "@layouts/default";
-import { getSnippetsBySlug, getAllSnippets } from "@utils/files";
+import { getSnippetsBySlug, getAllSnippets, Snippet } from "@utils/files";
 
 type Props = {
-  snippet: {
-    title: string;
-    tags: string[];
-    language: string;
-    content: string;
-  };
+  snippet: Snippet;
 };
 
 const createTags = (tags: string[]) => {
@@ -65,7 +60,6 @@ function Snippet({ snippet }: Props) {
 
   const tags = createTags(snippet.tags);
 
-  console.log(snippet.language);
   return (
     <DefaultLayout>
       {router.isFallback ? (
@@ -102,7 +96,7 @@ function Snippet({ snippet }: Props) {
 
             <CardBody>
               <pre>
-                <code>{snippet.content}</code>
+                <code>{snippet.code}</code>
               </pre>
             </CardBody>
           </Card>

@@ -21,6 +21,33 @@ export type Snippet = {
   code: string; // snippet itself
 };
 
+const uniq = (src: string[]) => {
+  return src.filter((elem, index, self) => self.indexOf(elem) === index);
+}
+
+const getTags = (t: string[] | string | undefined, tagsFromSlugs: string[]): string[] => {
+  if (!t) {
+    return uniq(tagsFromSlugs);
+  }
+  if (typeof (t) === "string") {
+    return uniq(t.split(",").concat(tagsFromSlugs))
+  }
+
+  return uniq(t.concat(tagsFromSlugs))
+};
+
+
+/**
+ * find a first code block if markdown. if not a markdown, return whole content
+ * 
+ * @param content markdown or just a string
+ * @returns code 
+ */
+export const getCode = (content: string): string => {
+
+  return content;
+}
+
 export const getSnippetsBySlug = (slugArray: string[]): Snippet => {
   const matchedSlug = slugArray.join("/");
   const realSlug = matchedSlug.replace(/\.md$/, "");
@@ -29,9 +56,8 @@ export const getSnippetsBySlug = (slugArray: string[]): Snippet => {
   const { data, content } = matter(fileContents);
 
   const tagsFromSlugs = slugArray.slice(0, -1);
-  const tags = data["tags"]
-    ? data["tags"].concat(tagsFromSlugs)
-    : tagsFromSlugs;
+
+  const tags = getTags(data["tags"], tagsFromSlugs);
 
   if (!data["language"]) {
     data["language"] = getLanguage(tags) || "";
@@ -40,7 +66,7 @@ export const getSnippetsBySlug = (slugArray: string[]): Snippet => {
     slug: slugArray,
     title: data["title"] || "",
     content: content,
-    code: content,
+    code: getCode(content),
     language: data["language"],
     tags: tags,
   };
