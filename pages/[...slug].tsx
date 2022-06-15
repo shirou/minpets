@@ -10,12 +10,15 @@ import {
   ClipboardCopyButton,
   Flex,
   Badge,
+  Chip,
+  ChipGroup,
   Text,
 } from "@patternfly/react-core";
 import { Card, CardTitle, CardBody, CardActions } from "@patternfly/react-core";
 
 import { DefaultLayout } from "@layouts/default";
 import { getSnippetsBySlug, getAllSnippets, Snippet } from "@utils/files";
+import { addSnippet } from "@utils/search";
 
 type Props = {
   snippet: Snippet;
@@ -23,11 +26,15 @@ type Props = {
 
 const createTags = (tags: string[]) => {
   return (
-    <Flex spaceItems={{ default: "spaceItemsXs" }}>
+    <ChipGroup numChips={4}>
       {tags.map((tag) => {
-        return <Badge key={tag}>{tag}</Badge>;
+        return (
+          <Chip key={tag} style={{ minWidth: 1 }} maxLength={4} isReadOnly>
+            {tag}
+          </Chip>
+        );
       })}
-    </Flex>
+    </ChipGroup>
   );
 };
 
@@ -74,7 +81,7 @@ function Snippet({ snippet }: Props) {
             <CardHeader>
               <CardTitle>
                 <Text>{snippet.title}</Text>
-
+                <Text>{snippet.description}</Text>
                 {tags}
               </CardTitle>
               <CardActions>
@@ -82,7 +89,7 @@ function Snippet({ snippet }: Props) {
                   id="copy-button"
                   textId="code-content"
                   aria-label="Copy to clipboard"
-                  onClick={(e) => onClick(e, snippet.content)}
+                  onClick={(e) => onClick(e, snippet.code)}
                   exitDelay={600}
                   maxWidth="110px"
                   variant="plain"
@@ -116,6 +123,7 @@ type Params = {
 
 export const getStaticProps = async ({ params }: Params) => {
   const snippet = getSnippetsBySlug(params.slug);
+
   const content = snippet.content || "";
 
   return {

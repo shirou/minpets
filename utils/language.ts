@@ -397,7 +397,9 @@ const supportLanguages = new Set([
   "zep",
 ]);
 
-export const getLanguage = (tags?: string[]): string | undefined => {
-  if (!tags) { return undefined }
-  return tags.find((tag) => supportLanguages.has(tag.toLowerCase()));
+export const getLanguage = (tags?: string[]): string => {
+  if (!tags) {
+    return "";
+  }
+  return tags.find((tag) => supportLanguages.has(tag.toLowerCase())) || "";
 };

@@ -6,7 +6,9 @@ import { DefaultLayout } from "@layouts/default";
 const Home: NextPage = () => {
   return (
     <DefaultLayout>
-      <Flex><Text>Minpets</Text></Flex>
+      <Flex>
+        <Text>Minpets</Text>
+      </Flex>
     </DefaultLayout>
   );
 };

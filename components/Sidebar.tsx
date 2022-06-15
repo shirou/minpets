@@ -48,7 +48,7 @@ export const Sidebar = (props: Props) => {
     <Stack>
       <Text>Minpets</Text>
       <Divider />
-      {tree ? (
+      {tree && !isLoading ? (
         <TreeView
           data={tree as TreeViewDataItem[]}
           hasGuides={true}
